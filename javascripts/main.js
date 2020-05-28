@@ -1,5 +1,5 @@
 //  描画領域
-let CANVAS_W = 600;
+let CANVAS_W = 800;
 let CANVAS_H = 600;
 
 let SCENE_TITLE = 0;  //  タイトル画面
@@ -22,20 +22,24 @@ let BLOCK_GRE_SCORE = 10; //  緑ブロックのスコア
 let BLOCK_YEL_SCORE = 15; //  黄ブロックのスコア
 
 //  フィールドの左上座標
-let FIELD_X = 40;
-let FIELD_Y = 40;
+let FIELD_X = 230;
+let FIELD_Y = 20;
 
 //  フィールド領域
 let FIELD_W = 12;
 let FIELD_H = 22;
 
 //  Next表示用のフィールド左上座標
-let NEXT_FIELD_X = CANVAS_W - 200;
-let NEXT_FIELD_Y = FIELD_Y;
+let NEXT_FIELD_X = CANVAS_W - 250;
+let NEXT_FIELD_Y = FIELD_Y + 25;
 
 //  スコア表示領域の左上座標
 let SCORE_PAIN_X = NEXT_FIELD_X;  
 let SCORE_PAIN_Y = CANVAS_H / 2;
+
+//  操作説明表示領域の左上座標
+let OPERATION_PAIN_X = 60;
+let OPERATION_PAIN_Y = CANVAS_H / 2;
 
 
 let KEY_RIGHT = 0;  //  右キー
@@ -280,6 +284,7 @@ var titlelogo = new Image();
 var titletext = new Image();
 var scoretext = new Image();
 var gameovertext = new Image();
+var background = new Image();
 
 //  BGM用
 var bgm = new Audio();
@@ -290,7 +295,7 @@ function init() {
   cnt = 1;  //  カウンタ変数
 
   field = [ // Fieldの内容
-	[9, 9, 9, 0, 0, 0, 0, 0, 0, 9, 9, 9,],
+	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
 	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
 	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
 	[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9,],
@@ -352,6 +357,7 @@ function init() {
 
   scene = SCENE_TITLE;  //  タイトル画面に設定
 
+  background.src = "./img/background.png";  //  背景
   titlelogo.src = "./img/titlelogo.png";  //  タイトルロゴ
   titletext.src = "./img/titletext.png";  //  タイトルテキスト
   scoretext.src = "./img/scoretext.png";  //  最高スコア
@@ -598,13 +604,17 @@ function drawBlock() {
     case 4: str = BLOCK_YEL_COLOR;  break;
   }
 
-  context.fillStyle = str; //  色の設定
 
   //  ブロックを描画
   for (var i = 0; i < BLOCK_H; i++) {
     for (var j = 0; j < BLOCK_W; j++) {
       if (block[btype][brot][i][j] == 1) {
-        context.fillRect(FIELD_X + (bx + j) * 25, FIELD_Y + (by + i) * 25, 25, 25);
+        context.fillStyle = str; //  色の設定
+        context.fillRect(FIELD_X + (bx + j) * 25, FIELD_Y + (by + i) * 25, 25, 25); //  四角形
+        
+        context.fillStyle = "rgba(0, 0, 0, 1.0)"; //  黒設定
+        context.fillRect(FIELD_X + (bx + j) * 25 + 5, FIELD_Y + (by + i) * 25 + 5, 2, 15); //  ブロック影：縦
+        context.fillRect(FIELD_X + (bx + j) * 25 + 5, FIELD_Y + (by + i) * 25 + 5, 15, 2); //  ブロック影：横
       }
     }
   }
@@ -622,11 +632,15 @@ function drawField() {
         case 2: str = BLOCK_BLU_COLOR;  break;  //  青
         case 3: str = BLOCK_GRE_COLOR;  break;  //  緑
         case 4: str = BLOCK_YEL_COLOR;  break;  //  黄色
-        case 9: str = "rgba(150, 150, 150, 1.0)"; break;  //  グレーに設定
+        case 9: str = "rgba(0, 0, 0, 1.0)"; break;  //  壁設定
       }
       context.fillStyle = str; //  フィールドに登録されている数字によって色を設定
       //  25*25のマスを描画
       context.fillRect(FIELD_X + j * 25, FIELD_Y + i * 25, 25, 25);
+      //  ブロック影描画
+      context.fillStyle = "rgba(0, 0, 0, 1.0)"; //  黒設定
+      context.fillRect(FIELD_X + j * 25 + 5, FIELD_Y + i * 25 + 5, 2, 15);  //  縦
+      context.fillRect(FIELD_X + j * 25 + 5, FIELD_Y + i * 25 + 5, 15, 2);  //  横
     }
   }
 }
@@ -635,6 +649,19 @@ function drawField() {
 function drawFrame() {
   context.fillStyle = "rgba(230, 230, 230, 1.0)"; //  ホワイトに設定
 
+  //  縦線
+  //  左
+  context.fillRect(FIELD_X + 25,                 FIELD_Y + 25, 1, (FIELD_H - 2) * 25);
+  //  右
+  context.fillRect(FIELD_X + (FIELD_W - 1) * 25, FIELD_Y + 25, 1, (FIELD_H - 2) * 25);
+
+  //  横線
+  //  上
+  context.fillRect(FIELD_X + 25, FIELD_Y + 25, (FIELD_W - 2) * 25, 1);
+  //  下
+  context.fillRect(FIELD_X + 25, FIELD_Y + (FIELD_H - 1) * 25, (FIELD_W - 2) * 25, 1);
+  
+  /*
   //  縦線を描画
   for (var i = 0; i < FIELD_W + 1; i++) {
     context.fillRect(FIELD_X + i * 25, FIELD_Y, 1, 25 * FIELD_H);
@@ -644,6 +671,7 @@ function drawFrame() {
   for (var i = 0; i < FIELD_H + 1; i++) {
     context.fillRect(FIELD_X, FIELD_Y + i * 25, 25 * FIELD_W, 1);
   }
+  */
 }
 
 //  Nextブロック領域の描画
@@ -679,24 +707,23 @@ function drawNextBlock() {
   }
 
   //  ブロックの枠の描画
-  context.fillStyle = "rgba(230, 230, 230, 1.0)";
+  context.fillStyle = "rgba(0, 0, 0, 1.0)";
   for (var i = 0; i < BLOCK_H; i++) {
     for (var j = 0; j < BLOCK_W; j++) {
       if (block[nbtype][nbrot][i][j] == 1) {
-        context.fillRect(NEXT_FIELD_X + 25 + j * 25,      NEXT_FIELD_Y + 15 + 25 + i * 25,      25, 1);
-        context.fillRect(NEXT_FIELD_X + 25 + j * 25,      NEXT_FIELD_Y + 15 + 25 + i * 25 + 25, 25, 1);
-        context.fillRect(NEXT_FIELD_X + 25 + j * 25,      NEXT_FIELD_Y + 15 + 25 + i * 25,       1, 25);
-        context.fillRect(NEXT_FIELD_X + 25 + j * 25 + 25, NEXT_FIELD_Y + 15 + 25 + i * 25,       1, 25);
+        context.fillRect(NEXT_FIELD_X + 25 + j * 25 + 5,      NEXT_FIELD_Y + 15 + 25 + i * 25 + 5,      15, 2);
+        context.fillRect(NEXT_FIELD_X + 25 + j * 25 + 5,      NEXT_FIELD_Y + 15 + 25 + i * 25 + 5,       2, 15);
       }
     }
   }
 
+  context.fillStyle = "rgba(230, 230, 230, 1.0)";
   context.font = "bold 20px sans-serif";
   context.fillText("Next", NEXT_FIELD_X + 50, 60);
   context.fillRect(NEXT_FIELD_X, 70, 150, 1);
 }
 
-//  スコア・操作説明などの描画
+//  スコアの描画
 function drawScorePain() {
   //  スコア表示
   context.fillStyle = "rgba(230, 230, 230, 1.0)"; //  文字色の設定
@@ -716,26 +743,72 @@ function drawScorePain() {
     }
     context.fillStyle = col;  //  短形の色を設定
     context.fillRect(SCORE_PAIN_X + 15, SCORE_PAIN_Y + 30 * (i + 1), 25, 25); //  短形を描画
+    context.fillStyle = "rgba(0, 0, 0, 1.0)";
+    context.fillRect(SCORE_PAIN_X + 15 + 5, SCORE_PAIN_Y + 30 * (i + 1) + 5, 2, 15);
+    context.fillRect(SCORE_PAIN_X + 15 + 5, SCORE_PAIN_Y + 30 * (i + 1) + 5, 15, 2);
 
     context.fillStyle = "rgba(230, 230, 230, 1.0)"; //  文字色を設定
     context.font = "bold 16px sans-serif";  //  文字フォントを設定
     context.fillText(str + delnum[i], SCORE_PAIN_X + 30 + 15, SCORE_PAIN_Y + 30 * (i + 1) + 18);  //  文字を描画
   }
 
+  //  枠の描画
+  context.fillStyle = "rgba(230, 230, 230, 1.0)";
+  context.fillRect(SCORE_PAIN_X,       SCORE_PAIN_Y - 30,       1, 200);
+  context.fillRect(SCORE_PAIN_X + 140, SCORE_PAIN_Y - 30,       1, 200);
+  context.fillRect(SCORE_PAIN_X,       SCORE_PAIN_Y - 30,       140, 1);
+  context.fillRect(SCORE_PAIN_X,       SCORE_PAIN_Y - 30 + 200, 140, 1);
+}
+
+//  操作方法描画
+function drawOperationPain() {
   context.fillStyle = "rgba(230, 230, 230, 1.0)"; //  文字色を設定
   context.font = "bold 18px sans-serif";  //  文字フォントを設定
 
   //  操作方法の表示
-  context.fillText("←・→：移動", SCORE_PAIN_X + 15, SCORE_PAIN_Y + 30 * 6);
-  context.fillText("↑・↓：左・右回転", SCORE_PAIN_X + 15, SCORE_PAIN_Y + 30 * 7);
-  context.fillText("SPACE：加速", SCORE_PAIN_X + 15, SCORE_PAIN_Y + 30 * 8);
+  context.fillText("Use only following", OPERATION_PAIN_X - 20, OPERATION_PAIN_Y);
 
+  context.font = "bold 20px sans-serif";  //  文字フォントを設定
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y + 60,       1, 40); //  左縦線
+  context.fillRect(OPERATION_PAIN_X + 40,  OPERATION_PAIN_Y + 60,       1, 40); //  右縦線
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y + 60,       40, 1);  //  上横線
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y + 60 + 40,  40, 1);  //  下横線
+  context.fillText("←", OPERATION_PAIN_X + 1, OPERATION_PAIN_Y + 60 + 19);
+
+  context.fillRect(OPERATION_PAIN_X + 40,       OPERATION_PAIN_Y + 20,       1, 40); //  左縦線
+  context.fillRect(OPERATION_PAIN_X + 40 + 40,  OPERATION_PAIN_Y + 20,       1, 40); //  右縦線
+  context.fillRect(OPERATION_PAIN_X + 40,       OPERATION_PAIN_Y + 20,       40, 1);  //  上横線
+  context.fillRect(OPERATION_PAIN_X + 40,       OPERATION_PAIN_Y + 20 + 40,  40, 1);  //  下横線
+  context.fillText("↑", OPERATION_PAIN_X + 40 + 1, OPERATION_PAIN_Y + 20 + 19);
+
+  context.fillRect(OPERATION_PAIN_X + 40,       OPERATION_PAIN_Y + 60,       1, 40); //  左縦線
+  context.fillRect(OPERATION_PAIN_X + 40 + 40,  OPERATION_PAIN_Y + 60,       1, 40); //  右縦線
+  context.fillRect(OPERATION_PAIN_X + 40,       OPERATION_PAIN_Y + 60,       40, 1);  //  上横線
+  context.fillRect(OPERATION_PAIN_X + 40,       OPERATION_PAIN_Y + 60 + 40,  40, 1);  //  下横線
+  context.fillText("↓", OPERATION_PAIN_X + 40 + 1, OPERATION_PAIN_Y + 60 + 19);
+  
+  context.fillRect(OPERATION_PAIN_X + 80,       OPERATION_PAIN_Y + 60,       1, 40); //  左縦線
+  context.fillRect(OPERATION_PAIN_X + 80 + 40,  OPERATION_PAIN_Y + 60,       1, 40); //  右縦線
+  context.fillRect(OPERATION_PAIN_X + 80,       OPERATION_PAIN_Y + 60,       40, 1);  //  上横線
+  context.fillRect(OPERATION_PAIN_X + 80,       OPERATION_PAIN_Y + 60 + 40,  40, 1);  //  下横線
+  context.fillText("→", OPERATION_PAIN_X + 80 + 1, OPERATION_PAIN_Y + 60 + 19);
+
+  context.font = "bold 18px sans-serif";  //  文字フォントを設定
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y + 120 + 20,       1, 30); //  左縦線
+  context.fillRect(OPERATION_PAIN_X + 120, OPERATION_PAIN_Y + 120 + 20,       1, 30); //  右縦線
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y + 120 + 20,       120, 1);  //  上横線
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y + 120 + 20 + 30,  120, 1);  //  下横線
+  context.fillText("SPACE", OPERATION_PAIN_X + 30, OPERATION_PAIN_Y + 120 + 20 + 19);
+
+
+  /*
   //  枠の描画
   context.fillStyle = "rgba(230, 230, 230, 1.0)";
-  context.fillRect(SCORE_PAIN_X,       SCORE_PAIN_Y - 20,       1, 290);
-  context.fillRect(SCORE_PAIN_X + 180, SCORE_PAIN_Y - 30,       1, 290);
-  context.fillRect(SCORE_PAIN_X,       SCORE_PAIN_Y - 30,       180, 1);
-  context.fillRect(SCORE_PAIN_X,       SCORE_PAIN_Y - 30 + 290, 180, 1);
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y - 20,       1, 290);
+  context.fillRect(OPERATION_PAIN_X + 180, OPERATION_PAIN_Y - 30,       1, 290);
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y - 30,       180, 1);
+  context.fillRect(OPERATION_PAIN_X,       OPERATION_PAIN_Y - 30 + 290, 180, 1);
+  */
 }
 
 //  ゲーム音楽初期化関数
@@ -821,8 +894,10 @@ requestAnimationFrame(main);  //  フレーム毎にmain関数呼び出し
 function main() {
   context.clearRect(0, 0, CANVAS_W, CANVAS_H);  //  画面クリア
 
-  context.fillStyle = "rgba(0, 0, 0, 1.0)"; //  背景色の設定
+  context.fillStyle = "rgba(255, 255, 255, 1.0)"; //  背景色の設定
   context.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  context.drawImage(background, 0, 0, CANVAS_W, CANVAS_H);
 
   if (scene == SCENE_TITLE) {
     
@@ -833,7 +908,7 @@ function main() {
       titlelogoposition++;
     }
 
-    context.drawImage(titlelogo, CANVAS_W / 3, titlelogoposition);
+    context.drawImage(titlelogo, CANVAS_W / 2 - 90, titlelogoposition);
 
     if (titlelogoflag) {
     
@@ -854,13 +929,13 @@ function main() {
       titlesound.play();
 
       //  最高スコアの表示
-      context.drawImage(scoretext, CANVAS_W / 4, CANVAS_W / 3 + 200, CANVAS_W / 2, 30);
-      context.font = "bold 32px sans-serif";  //  文字フォントの設定
+      context.drawImage(scoretext, CANVAS_W / 4, CANVAS_H / 3 + 200, CANVAS_W / 2, 30);
+      context.font = "bold 36px sans-serif";  //  文字フォントの設定
       if (bestscore == -1) {  //  スコアが一回も出されていない場合
-        context.fillText("-", CANVAS_W - 130, CANVAS_H / 3 + 230);
+        context.fillText("-", CANVAS_W - 150, CANVAS_H / 3 + 230);
       }
       else {  //  スコアが出された場合
-        context.fillText(bestscore, CANVAS_W - 130 , CANVAS_H / 3 + 230);
+        context.fillText(bestscore, CANVAS_W - 150 , CANVAS_H / 3 + 230);
       }
     }
 
@@ -876,11 +951,12 @@ function main() {
     titlesound.pause();
     bgm.play();       //  ゲーム音楽を再生
 
-    drawBlock();      //  ブロックを描画
-    drawField();      //  フィールドを描画
-    drawFrame();      //  フィールド枠を描画
-    drawNextBlock();  //  Next表示を描画
-    drawScorePain();  //  スコア表示領域を描画
+    drawBlock();          //  ブロックを描画
+    drawField();          //  フィールドを描画
+    drawFrame();          //  フィールド枠を描画
+    drawOperationPain();  //  操作説明表示領域を描画
+    drawNextBlock();      //  Next表示を描画
+    drawScorePain();      //  スコア表示領域を描画
 
     cnt++;  //  カウンタを更新
 
@@ -899,7 +975,7 @@ function main() {
         context.fillText("GAME OVER", CANVAS_W / 6, CANVAS_H / 2); //  文字の描画
         */
 
-        context.drawImage(gameovertext, CANVAS_W / 4, CANVAS_W / 2, CANVAS_W / 2, 30);
+        context.drawImage(gameovertext, CANVAS_W / 4, CANVAS_H / 2 - 60, CANVAS_W / 2, 30);
         break;
       }
     }
